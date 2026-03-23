@@ -1,0 +1,1 @@
+SELECT ID_modelo, AVG(Verificador) AS Nota_Media FROM AVALIACAO GROUP BY ID_modelo;
