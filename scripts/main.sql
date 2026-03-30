@@ -3,14 +3,14 @@ DROP TABLE IF EXISTS MODELO, ITEM, CLIENTE, VENDA, AVALIACAO;
 -- Create
 CREATE TABLE MODELO(
   ID INT PRIMARY KEY,
-  Nome VARCHAR(100) UNIQUE NOT NULL,
-  Descricao TEXT
+  nome VARCHAR(100) UNIQUE NOT NULL,
+  descricao TEXT
   
 );
 
 CREATE TABLE ITEM(
-  Numero_serie INT PRIMARY KEY,
-  Valor_aquisicao NUMERIC(7,2) NOT NULL,
+  numero_serie INT PRIMARY KEY,
+  valor_aquisicao NUMERIC(7,2) NOT NULL,
   ID INT NOT NULL,
   
   CHECK(Valor_aquisicao > 0),
@@ -21,22 +21,22 @@ CREATE TABLE ITEM(
 
 CREATE TABLE CLIENTE(
   CPF CHAR(11) PRIMARY KEY,
-  Nome VARCHAR(50) NOT NULL,
-  Nascimento DATE,
-  Genero VARCHAR (20)
+  nome VARCHAR(50) NOT NULL,
+  nascimento DATE,
+  genero VARCHAR (20)
   
 );
 
 CREATE TABLE VENDA(
-  Item_vendido INT PRIMARY KEY,
-  Cliente CHAR(11) NOT NULL,
+  item_vendido INT PRIMARY KEY,
+  cliente CHAR(11) NOT NULL,
   Data DATE NOT NULL,
-  Hora TIME NOT NULL,
-  Valor_vendido NUMERIC(7,2) NOT NULL,
+  hora TIME NOT NULL,
+  valor_vendido NUMERIC(7,2) NOT NULL,
   
-  CHECK(Item_vendido > 0),
+  CHECK(item_vendido > 0),
     
-  FOREIGN KEY(Item_vendido) REFERENCES ITEM(Numero_serie),
+  FOREIGN KEY(item_vendido) REFERENCES ITEM(numero_serie),
   FOREIGN KEY(Cliente) REFERENCES CLIENTE(CPF)
   
 );
@@ -106,3 +106,47 @@ INSERT INTO AVALIACAO (Verificador, CPF, ID_modelo) VALUES
 (5, '44455566677', 3);
 
 -- Exibir
+
+--SELECT ID_modelo, AVG(Verificador) AS Nota_Media FROM AVALIACAO GROUP BY ID_modelo;
+
+CREATE TABLE LUCRO_MODELOS_VERIFICADO AS
+SELECT M.Nome AS nome_modelo,
+SUM(V.Valor_vendido - I.Valor_aquisicao) AS lucro_acumulado
+FROM MODELO M LEFT JOIN ITEM I ON M.ID = I.ID
+LEFT JOIN VENDA V ON I.Numero_serie = V.Item_vendido
+GROUP BY M.Nome ORDER BY lucro_Acumulado DESC; 
+
+CREATE VIEW VW_RESUMO_LUCRO AS
+SELECT nome_modelo, lucro_acumulado
+FROM LUCRO_MODELOS_VERIFICADO;
+
+--SELECT * FROM VW_RESUMO_LUCRO;
+
+CREATE OR REPLACE FUNCTION fn_verifica_minimo_lucro()
+RETURNS TRIGGER AS $$ 
+DECLARE 
+  v_custo NUMERIC(7,2);
+BEGIN
+  SELECT valor_aquisicao INTO V_custo FROM ITEM
+  WHERE numero_serie = NEW.item_vendido;
+
+  IF NEW.valor_vendido < (v_custo * 1.3) THEN
+    RAISE EXCEPTION 'Venda Bloqueada: R$ % é menor que 30% de lucro',
+    NEW.valor_vendido, (v_custo * 1.30);
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_valida_venda
+BEFORE INSERT OR UPDATE ON VENDA
+FOR EACH ROW EXECUTE FUNCTION fn_verifica_minimo_lucro();
+
+--INSERT INTO VENDA (Item_vendido, Cliente, Data, Hora, Valor_vendido) 
+--VALUES (1003, '11122233344', '2026-03-25', '10:00:00', 900.00);
+
+--INSERT INTO VENDA (Item_vendido, Cliente, Data, Hora, Valor_vendido) 
+--VALUES (1004, '11122233344', '2026-03-25', '10:30:00', 1200.00);
+
+--SELECT * FROM VENDA WHERE Item_vendido IN (1003, 1004);
