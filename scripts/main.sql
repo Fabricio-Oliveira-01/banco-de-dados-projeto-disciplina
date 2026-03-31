@@ -1,152 +1,95 @@
-DROP TABLE IF EXISTS MODELO, ITEM, CLIENTE, VENDA, AVALIACAO;
+DROP TABLE IF EXISTS AVALIACAO, VENDA, ITEM, MODELO, CLIENTE, LUCRO_MODELOS;
 
--- Create
+-- Questão 1 (Aula 05/06): Esquema com restrições lógicas
 CREATE TABLE MODELO(
-  ID INT PRIMARY KEY,
-  nome VARCHAR(100) UNIQUE NOT NULL,
-  descricao TEXT
-  
+  ID_modelo INT PRIMARY KEY,
+  Nome_modelo VARCHAR(100) UNIQUE NOT NULL,
+  Descricao_modelo TEXT
 );
 
 CREATE TABLE ITEM(
-  numero_serie INT PRIMARY KEY,
-  valor_aquisicao NUMERIC(7,2) NOT NULL,
-  ID INT NOT NULL,
-  
-  CHECK(Valor_aquisicao > 0),
-  
-  FOREIGN KEY(ID) REFERENCES MODELO(ID)
-  
+  Numero_serie INT PRIMARY KEY,
+  Valor_aquisicao DECIMAL(7,2) NOT NULL CHECK (Valor_aquisicao > 0),
+  ID_modelo INT NOT NULL,
+  FOREIGN KEY(ID_modelo) REFERENCES MODELO(ID_modelo) ON UPDATE CASCADE
 );
 
 CREATE TABLE CLIENTE(
   CPF CHAR(11) PRIMARY KEY,
-  nome VARCHAR(50) NOT NULL,
-  nascimento DATE,
-  genero VARCHAR (20)
-  
+  Nome_cliente VARCHAR(50) NOT NULL,
+  Data_nascimento DATE,
+  Genero VARCHAR(20)
 );
 
 CREATE TABLE VENDA(
-  item_vendido INT PRIMARY KEY,
-  cliente CHAR(11) NOT NULL,
-  Data DATE NOT NULL,
-  hora TIME NOT NULL,
-  valor_vendido NUMERIC(7,2) NOT NULL,
-  
-  CHECK(item_vendido > 0),
-    
-  FOREIGN KEY(item_vendido) REFERENCES ITEM(numero_serie),
-  FOREIGN KEY(Cliente) REFERENCES CLIENTE(CPF)
-  
+  Item_vendido INT PRIMARY KEY,
+  CPF_cliente CHAR(11) NOT NULL,
+  Data_venda DATE NOT NULL,
+  Hora_venda TIME NOT NULL,
+  Valor_venda DECIMAL(7,2) NOT NULL,
+  FOREIGN KEY(Item_vendido) REFERENCES ITEM(Numero_serie),
+  FOREIGN KEY(CPF_cliente) REFERENCES CLIENTE(CPF)
 );
 
+-- Questão 2 (Aula 06): Avaliações
 CREATE TABLE AVALIACAO(
-	Verificador INT NOT NULL,
-    CPF CHAR(11),
-    ID_modelo INT,
-    
-    PRIMARY KEY(CPF, ID_modelo),
-    FOREIGN KEY(ID_modelo) REFERENCES MODELO(ID),
-    FOREIGN KEY(CPF) REFERENCES CLIENTE(CPF),
-    
-    CHECK(Verificador BETWEEN 0 AND 5)
-    
+  CPF_cliente CHAR(11),
+  ID_modelo INT,
+  Nota_avaliacao INT NOT NULL CHECK(Nota_avaliacao BETWEEN 0 AND 5),
+  PRIMARY KEY(CPF_cliente, ID_modelo),
+  FOREIGN KEY(ID_modelo) REFERENCES MODELO(ID_modelo),
+  FOREIGN KEY(CPF_cliente) REFERENCES CLIENTE(CPF)
 );
 
+-- Inserts de Exemplo (Aula 06)
+INSERT INTO MODELO VALUES (1, 'Painel Solar 550W', 'Alta eficiência'), (2, 'Inversor 5kW', 'Monofásico'), (3, 'Estrutura Solo', 'Suporte Alumínio');
+INSERT INTO ITEM VALUES (1001, 800.00, 1), (1002, 800.00, 1), (2001, 4000.00, 2), (3001, 1000.00, 3);
+INSERT INTO CLIENTE VALUES ('11122233344', 'Fabricio Oliveira', '1995-05-20', 'M'), ('55566677788', 'Fabio Macelo', '1988-10-12', 'M');
+INSERT INTO VENDA VALUES (1001, '11122233344', '2026-03-30', '14:00:00', 1200.00), (2001, '55566677788', '2026-03-30', '15:00:00', 5500.00);
+INSERT INTO AVALIACAO VALUES ('11122233344', 1, 5), ('55566677788', 1, 4), ('11122233344', 2, 5), ('55566677788', 2, 3);
 
--- Insert
-
-INSERT INTO MODELO (ID, Nome, Descricao) VALUES
-(1, 'Painel Solar 550W Monocristalino', 'Painel de alta eficiência para usinas solares.'),
-(2, 'Inversor On-Grid 5kW', 'Inversor monofásico para conexão com a rede da COSERN.'),
-(3, 'Estrutura de Solo Alumínio', 'Suporte para fixação de até 4 módulos em solo.');
-
-INSERT INTO ITEM (Numero_serie, Valor_aquisicao, ID) VALUES
-(1001, 850.00, 1),
-(1002, 850.00, 1),
-(1003, 850.00, 1),
-(1004, 850.00, 1),
-(2001, 4200.00, 2),
-(2002, 4200.00, 2),
-(3001, 1100.00, 3),
-(3002, 1100.00, 3),
-(3003, 1100.00, 3),
-(3004, 1100.00, 3);
-
-INSERT INTO CLIENTE (CPF, Nome, Nascimento, Genero) VALUES
-('11122233344', 'Fabricio Oliveira', '1995-05-20', 'Masculino'),
-('55566677788', 'Fabio Macelo', '1988-10-12', 'Feminino'),
-('99900011122', 'Danilo', '1975-03-15', 'Masculino'),
-('44455566677', 'Carla Mendonça', '1992-08-30', 'Feminino');
-
-INSERT INTO VENDA (Item_vendido, Cliente, Data, Hora, Valor_vendido) VALUES
-(1001, '11122233344', '2026-03-10', '14:30:00', 1100.00),
-(2001, '55566677788', '2026-03-12', '09:15:00', 5500.00),
-(3001, '99900011122', '2026-03-14', '16:45:00', 1600.00),
-(1002, '44455566677', '2026-03-15', '11:00:00', 1100.00),
-(2002, '11122233344', '2026-03-18', '15:20:00', 5500.00);
-
-INSERT INTO AVALIACAO (Verificador, CPF, ID_modelo) VALUES
-(5, '11122233344', 1),
-(4, '55566677788', 1),
-(5, '99900011122', 1),
-(3, '44455566677', 1);
-
-INSERT INTO AVALIACAO (Verificador, CPF, ID_modelo) VALUES
-(5, '11122233344', 2),
-(5, '55566677788', 2),
-(2, '99900011122', 2),
-(4, '44455566677', 2);
-
-INSERT INTO AVALIACAO (Verificador, CPF, ID_modelo) VALUES
-(4, '11122233344', 3),
-(4, '55566677788', 3),
-(3, '99900011122', 3),
-(5, '44455566677', 3);
-
--- Exibir
-
---SELECT ID_modelo, AVG(Verificador) AS Nota_Media FROM AVALIACAO GROUP BY ID_modelo;
-
-CREATE TABLE LUCRO_MODELOS_VERIFICADO AS
-SELECT M.Nome AS nome_modelo,
-SUM(V.Valor_vendido - I.Valor_aquisicao) AS lucro_acumulado
-FROM MODELO M LEFT JOIN ITEM I ON M.ID = I.ID
+-- Questão 3 (Aula 07): View Materializada (Tabela de Lucro)
+CREATE TABLE LUCRO_MODELOS AS
+SELECT 
+    M.Nome_modelo,
+    IFNULL(SUM(V.Valor_venda - I.Valor_aquisicao), 0) AS lucro_acumulado
+FROM MODELO M 
+LEFT JOIN ITEM I ON M.ID_modelo = I.ID_modelo
 LEFT JOIN VENDA V ON I.Numero_serie = V.Item_vendido
-GROUP BY M.Nome ORDER BY lucro_Acumulado DESC; 
+GROUP BY M.Nome_modelo
+ORDER BY lucro_acumulado DESC;
 
-CREATE VIEW VW_RESUMO_LUCRO AS
-SELECT nome_modelo, lucro_acumulado
-FROM LUCRO_MODELOS_VERIFICADO;
+-- Questão 4 (Aula 08): Trigger de Proteção Funcao
+DELIMITER $$
 
---SELECT * FROM VW_RESUMO_LUCRO;
-
-CREATE OR REPLACE FUNCTION fn_verifica_minimo_lucro()
-RETURNS TRIGGER AS $$ 
-DECLARE 
-  v_custo NUMERIC(7,2);
+CREATE TRIGGER trg_valida_margem_venda
+BEFORE INSERT ON VENDA
+FOR EACH ROW
 BEGIN
-  SELECT valor_aquisicao INTO V_custo FROM ITEM
-  WHERE numero_serie = NEW.item_vendido;
+    DECLARE v_custo_item DECIMAL(7,2);
 
-  IF NEW.valor_vendido < (v_custo * 1.3) THEN
-    RAISE EXCEPTION 'Venda Bloqueada: R$ % é menor que 30% de lucro',
-    NEW.valor_vendido, (v_custo * 1.30);
-  END IF;
+    -- Busca o valor de aquisição do item que está sendo vendido
+    SELECT Valor_aquisicao INTO v_custo_item
+    FROM ITEM
+    WHERE Numero_serie = NEW.Item_vendido;
 
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+    -- Verifica se o valor de venda é menor que custo + 30%
+    IF NEW.Valor_venda < (v_custo_item * 1.30) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Erro: O valor de venda deve ser pelo menos 30% maior que o custo.';
+    END IF;
+END$$
 
-CREATE TRIGGER trg_valida_venda
-BEFORE INSERT OR UPDATE ON VENDA
-FOR EACH ROW EXECUTE FUNCTION fn_verifica_minimo_lucro();
+DELIMITER ;
 
---INSERT INTO VENDA (Item_vendido, Cliente, Data, Hora, Valor_vendido) 
---VALUES (1003, '11122233344', '2026-03-25', '10:00:00', 900.00);
 
---INSERT INTO VENDA (Item_vendido, Cliente, Data, Hora, Valor_vendido) 
---VALUES (1004, '11122233344', '2026-03-25', '10:30:00', 1200.00);
+-- Questao 03: Ordenar 
+-- SELECT * FROM LUCRO_MODELOS;
 
---SELECT * FROM VENDA WHERE Item_vendido IN (1003, 1004);
+-- Questao 04: Tá falhando, de acordo com os testes
+-- INSERT INTO VENDA (Item_vendido, CPF_cliente, Data_venda, Hora_venda, Valor_venda) 
+-- VALUES (1002, '11122233344', '2026-03-30', '16:00:00', 900.00);
+
+SELECT AVG(Nota_avaliacao) AS Media_avaliacao
+FROM AVALIACAO
+GROUP BY ID_modelo;
