@@ -27,6 +27,7 @@ PRIMARY KEY(cpf_perito)
 );
 
 
+-- Restricao de Relacionamento
 CREATE TABLE BEM(
 codigo_bem VARCHAR(20),
 valor_bem REAL NOT NULL,
@@ -41,7 +42,7 @@ periodo_cobertura VARCHAR(3) NOT NULL,
 data_inicio DATE NOT NULL,
 franquia VARCHAR(40) NOT NULL,
 
-codigo_bem VARCHAR(20),
+codigo_bem VARCHAR(20) NOT NULL,
 
 FOREIGN KEY (codigo_bem) REFERENCES BEM(codigo_bem),
 PRIMARY KEY (n_apolice)
@@ -79,7 +80,7 @@ PRIMARY KEY (codigo_bem)
 );
 
 
---Atributo multivalorado de cliente
+-- Atributo multivalorado de cliente
 CREATE TABLE TELEFONES_CLIENTE(
 telefone CHAR(11),
 
@@ -90,7 +91,7 @@ PRIMARY KEY (cpf_cliente, telefone)
 );
 
 
---Relacionamento avalia
+-- Relacionamento avalia
 CREATE TABLE AVALIACAO_SINISTRO(
 observacao TEXT,
 data_vistoria DATE NOT NULL,
@@ -105,12 +106,12 @@ PRIMARY KEY (cpf_perito, n_apolice, n_sinistro)
 );
 
 
---Relacionamento Adquire 
+-- Relacionamento Adquire
 CREATE TABLE ADQUIRE(
 data_assinatura DATE NOT NULL,
 
-cpf_cliente CHAR(11),
-n_SUSEP CHAR(17),
+cpf_cliente CHAR(11) NOT NULL,
+n_SUSEP CHAR(17) NOT NULL,
 n_apolice VARCHAR(30),
 
 FOREIGN KEY (cpf_cliente) REFERENCES CLIENTE(cpf_cliente),
