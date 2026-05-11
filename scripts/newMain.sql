@@ -18,15 +18,32 @@ PRIMARY KEY (n_SUSEP)
 );
 
 
+CREATE TABLE PERITO(
+cpf_perito CHAR(11),
+nome_perito VARCHAR(20) NOT NULL,
+especialita VARCHAR(30),
+
+PRIMARY KEY(cpf_perito)
+);
+
+
+CREATE TABLE BEM(
+codigo_bem VARCHAR(20),
+valor_bem REAL NOT NULL,
+
+PRIMARY KEY(codigo_bem)
+);
+
+
 CREATE TABLE SEGURO(
 n_apolice VARCHAR(30),
 periodo_cobertura VARCHAR(3) NOT NULL,
 data_inicio DATE NOT NULL,
 franquia VARCHAR(40) NOT NULL,
 
-n_sinistro VARCHAR(20) NOT NULL,
+codigo_bem VARCHAR(20),
 
-FOREIGN KEY (n_sinistro) REFERENCES SINISTRO(n_sinistro),
+FOREIGN KEY (codigo_bem) REFERENCES BEM(codigo_bem),
 PRIMARY KEY (n_apolice)
 );
 
@@ -42,25 +59,6 @@ FOREIGN KEY (n_apolice) REFERENCES SEGURO(n_apolice),
 PRIMARY KEY (n_apolice, n_sinistro)
 );
 
-
-CREATE TABLE PERITO(
-cpf_perito CHAR(11),
-nome_perito VARCHAR(20) NOT NULL,
-especialita VARCHAR(30),
-
-PRIMARY KEY(cpf_perito)
-);
-
-
-CREATE TABLE BEM(
-codigo_bem VARCHAR(20),
-valor_bem REAL NOT NULL,
-
-n_apolice VARCHAR(30) NOT NULL,
-
-FOREIGN KEY (n_apolice) REFERENCES SEGURO(n_apolice),
-PRIMARY KEY(codigo_bem)
-);
 
 CREATE TABLE AUTOMOVEL(
 modelo VARCHAR(20),
